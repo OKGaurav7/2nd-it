@@ -46,3 +46,51 @@ for filename in os.listdir("."):
 
 # Export DataFrame to Excel
 df_all.to_excel("extracted_words.xlsx", index=False, header=False)
+#_---------------
+
+import pytesseract
+from PIL import Image
+import pandas as pd
+import os
+
+# Initialize an empty DataFrame
+df_all = pd.DataFrame()
+
+# Flag to check if the DataFrame is empty
+is_empty = True
+
+# Loop through all image files in the folder
+for filename in os.listdir("."):
+    if filename.startswith("page") and filename.endswith(".jpg"):
+        # Read the image
+        image = Image.open(filename)
+        
+        # Use Tesseract to extract text from the image
+        text = pytesseract.image_to_string(image)
+        
+        # Split text into lines
+        lines = text.split("\n")
+        
+        # Split each line into words and append them to the list
+        words_list = [line.split() for line in lines]
+        
+        # Find the maximum number of words in any line
+        max_words = max(len(words) for words in words_list)
+        
+        # Create a DataFrame with each word in a different cell
+        df = pd.DataFrame(words_list)
+        
+        # Pad shorter lines with NaN to ensure equal number of columns
+        for column in range(max_words):
+            df[column] = df[column].apply(lambda x: x if isinstance(x, str) else "")
+        
+        # Append the DataFrame to the main DataFrame with two empty lines
+        if not is_empty:
+            empty_lines = pd.DataFrame([[""] * max_words] * 2)
+            df_all = pd.concat([df_all, empty_lines, df], ignore_index=True)
+        else:
+            df_all = pd.concat([df_all, df], ignore_index=True)
+            is_empty = False
+
+# Export DataFrame to Excel
+df_all.to_excel("extracted_words.xlsx", index=False, header=False)
