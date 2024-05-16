@@ -1,17 +1,1 @@
-import pandas as pd
 
-# Step 1: Read the CSV file into a DataFrame
-mister = pd.read_csv('mister.csv')
-
-# Step 2: Identify the rows where there is data in the 37th column (column index 36 in 0-based indexing)
-errda = mister[mister.iloc[:, 36].notnull()]
-
-# Step 3: Extract those rows into a new DataFrame
-errda = mister[mister.iloc[:, 36].notnull()]
-
-# Step 4: Remove those rows from the original DataFrame
-mister = mister[mister.iloc[:, 36].isnull()]
-
-# Optionally, save the new DataFrames to CSV files
-errda.to_csv('errda.csv', index=False)
-mister.to_csv('mister_clean.csv', index=False)
