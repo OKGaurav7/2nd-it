@@ -1,1 +1,37 @@
+import pandas as pd
+from datetime import timedelta
 
+# Load the Excel file
+file_path = 'your_excel_file.xlsx'  # Replace with your file path
+df = pd.read_excel(file_path)
+
+# Ensure the Date and Time columns are combined and converted to datetime
+df['datetime'] = pd.to_datetime(df['date'].astype(str) + ' ' + df['time'].astype(str))
+
+# Sort the data by name, datetime, and buysell
+df = df.sort_values(by=['name', 'datetime', 'buysell'])
+
+# Initialize a list to hold rows that satisfy the condition
+result_rows = []
+
+# Function to aggregate prices within 3-minute intervals
+def check_and_collect(group):
+    for i in range(len(group)):
+        start_time = group.iloc[i]['datetime']
+        end_time = start_time + timedelta(minutes=3)
+        sub_group = group[(group['datetime'] >= start_time) & (group['datetime'] <= end_time)]
+        if sub_group['price'].sum() > 20000:
+            result_rows.extend(sub_group.index.tolist())
+
+# Apply the function
+df.groupby(['name', 'buysell']).apply(check_and_collect)
+
+# Filter the DataFrame to get only the rows that satisfy the condition
+filtered_df = df.loc[result_rows].drop_duplicates()
+
+# Save the results to a new Excel file
+output_file_path = 'filtered_results.xlsx'  # Replace with your desired output file path
+filtered_df.to_excel(output_file_path, index=False)
+
+print("Filtered results have been saved to", output_file_path)
+          
